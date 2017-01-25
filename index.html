@@ -30,71 +30,131 @@
                 cursor: pointer;
                 cursor: hand; 
             }
+			
+			table{ background: url("background.jpg"); 
         </style>
-        <script src='http://192.168.1.105/jquery-3.1.1.min.js'>
-        </script>
+		
+
+		
+		<link rel="stylesheet" href="css/themes/default/jquery.mobile-1.3.2.min.css">
+	<link rel="stylesheet" href="_assets/css/jqm-demos.css">
+	<link rel="shortcut icon" href="favicon.ico">
+	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,700">
+	<script src="js/jquery.js"></script>
+	<!--script src="_assets/js/index.js"></script-->
+	<script src="js/jquery.mobile-1.3.2.min.js"></script>
+	<script src="microgear.js"></script>
+		
+		<script>
+      var member = [];
+      var autoscroll = true;
+      var name = "swBoxUI";
+      var microgear ;
+	  setInformation();
+	  
+      function setInformation(){
+    
+
+        const APPKEY = "MURKEoSOqtFW7kT";
+        const APPSECRET = "uQZZNOezliZXD48rpEeDtF9IF";
+        const APPID = "proj4u";
+
+
+        microgear = Microgear.create({
+          gearkey: APPKEY,
+          gearsecret: APPSECRET
+        });
+		
+        microgear.on('message',function(topic,msg) {
+          console.log(msg);
+          var loads = msg.trim().split('\n');
+		  if(loads.length==8){
+			for (i = 0; i < loads.length; i++) {
+				var c = loads[i].split(':')[1];
+				if (c === '1'){
+					$('#ch'+i).removeClass('btn').addClass('btn-s');
+				}else{
+					$('#ch'+i).removeClass('btn-s').addClass('btn');
+				}
+            }
+		  }
+
+        });
+
+        microgear.on('connected', function() {
+          microgear.subscribe("/chat");
+          microgear.setAlias(name);
+          microgear.publish("/chat","I'm new#"+name);
+          microgear.publish("/chat","Hi#"+name);
+        });
+        microgear.on('present', function(event) {
+          console.log(event);
+        });
+        microgear.on('absent', function(event) {
+          console.log(event);
+        });
+        microgear.resettoken(function(){
+          microgear.connect(APPID);
+        });
+      }
+    </script>
+	
     </head>
     <body>
-    <center>
-        <h2 id='text'>Basic eSwitchBox8ch Load Control</h2><hr>
-        <br>
-        <table width='300'>
-            <tr align='center'><td><div class='btn' id='ch0' onclick='setState(this)'></div><br>Load01<br><br></td><td><div class='btn' id='ch1' onclick='setState(this)'></div><br>Load02<br><br></td></tr>
-            <tr align='center'><td><div class='btn' id='ch2' onclick='setState(this)'></div><br>Load03<br><br></td><td><div class='btn' id='ch3' onclick='setState(this)'></div><br>Load04<br><br></td></tr>
-            <tr align='center'><td><div class='btn' id='ch4' onclick='setState(this)'></div><br>Load05<br><br></td><td><div class='btn' id='ch5' onclick='setState(this)'></div><br>Load06<br><br></td></tr>
-            <tr align='center'><td><div class='btn' id='ch6' onclick='setState(this)'></div><br>Load07<br><br></td><td><div class='btn' id='ch7' onclick='setState(this)'></div><br>Load08<br><br></td></tr>
-        </table>
-        <div id='mon'></div>
-    </center>
+	<div data-role="header">
+		<h1>eSwitchBox Control</h1>
+	</div>
+<div data-role="footer" data-position="fixed" data-fullscreen="false">
+	<h1>*-*</h1>
+</div>
+	<div class="ui-grid-a" align="center" style="vertical-align:middle;">
+    <div class="ui-block-a"><div class="" ><br><div class='btn' id='ch0' onclick='setState(this)'></div>Load01<br></div></div>
+    <div class="ui-block-b"><div class="" ><br><div class='btn' id='ch1' onclick='setState(this)'></div>Load02<br></div></div>
+	<div class="ui-block-a"><div class="" ><br><div class='btn' id='ch2' onclick='setState(this)'></div>Load03<br></div></div>
+    <div class="ui-block-b"><div class="" ><br><div class='btn' id='ch3' onclick='setState(this)'></div>Load04<br></div></div>
+	
+	<div class="ui-block-a"><div class="" ><br><div class='btn' id='ch4' onclick='setState(this)'></div>Load05<br></div></div>
+    <div class="ui-block-b"><div class="" ><br><div class='btn' id='ch5' onclick='setState(this)'></div>Load06<br></div></div>
+	<div class="ui-block-a"><div class="" ><br><div class='btn' id='ch6' onclick='setState(this)'></div>Load07<br></div></div>
+    <div class="ui-block-b"><div class="" ><br><div class='btn' id='ch7' onclick='setState(this)'></div>Load08<br></div></div>
+
+	</div><!-- /grid-a -->
+
     <script>
         $(document).ready(function () {
-            setInterval(setButtonState,500);
+           setTimeout(setButtonState,100);
         });
-        var count=0;
+
         function setButtonState(){
-                        $.ajax({
-                method: 'GET',
-                url: 'http://192.168.1.105/load',
-                data: {name: 'John', location: 'Boston'}
-            }).done(function (msg) {
-                count+=1;
-                $('#mon').html('Read Time : '+count);
-                var loads = msg.trim().split('\n');
-                for (i = 0; i < loads.length; i++) {
-                    var c = loads[i].split(':')[1];
-                    if (c === '1'){
-                        $('#ch'+i).removeClass('btn').addClass('btn-s');
-                    }else{
-                        $('#ch'+i).removeClass('btn-s').addClass('btn');
-                    }
-                }
-            });
+			microgear.publish("/chat","msg#"+name+"#chs");
         }
+		
          function setState(b){
-            var paramName;
+			var paramName;
             var paramVal;
             if($(b).attr('class')==='btn-s'){
                 paramName=$(b).attr('id');
                 paramVal='0';
+				$(b).removeClass('btn-s').addClass('btn');
+				
             }else{
                 paramName=$(b).attr('id');
                 paramVal='1';
+				$(b).removeClass('btn').addClass('btn-s');
             }
-             $.ajax({
-                method: 'GET',
-                url: 'http://192.168.1.105/load?'+paramName+'='+paramVal,
-            }).done(function (msg) {
-                 var loads = msg.trim().split('\n');
-                for (i = 0; i < loads.length; i++) {
-                    var c = loads[i].split(':')[1];
-                    if (c === '1'){
-                        $('#ch'+i).removeClass('btn').addClass('btn-s');
-                    }else{
-                        $('#ch'+i).removeClass('btn-s').addClass('btn');
-                    }
-                }
-            });
+            microgear.publish("/chat","msg#"+name+"#"+paramName+"="+paramVal);
          }
+		 
+		 
+		 
+		 
+	function disconnect(){
+      microgear.publish("/chat","bye#"+name);
+    }
+    function chat(msg){
+          microgear.publish("/chat","msg#"+name+"#"+msg);
+    }
+
     </script>
 </body>
 </html>
