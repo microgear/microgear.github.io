@@ -42,7 +42,7 @@
             <script>
                 var member = [];
                 var autoscroll = true;
-                var name = "swBoxUI";
+                var name = "SMTPLUGUI";
                 var microgear;
                 setInformation();
 
@@ -59,25 +59,29 @@
 
                     microgear.on('message', function (topic, msg) {
                         console.log(msg);
-                        var loads = msg.trim().split('\n');
-                        if (loads.length == 8) {
-                            for (i = 0; i < loads.length; i++) {
-                                var c = loads[i].split(':')[1];
-                                if (c === '1') {
+                        var message = msg.trim().split('#');
+                        var src = message[1];
+                        var cmd = message[2].split("=");
+                        var param=cmd[0];
+                        var value=cmd[1];
+                        
+                        if(param=="pins"){
+                            var pins=value.split(",");
+                            for (i = 0; i < pins.length; i++) {
+                                if (parseInt(pins[i]) > 0) {
                                     $('#ch' + i).removeClass('btn').addClass('btn-s');
                                 } else {
                                     $('#ch' + i).removeClass('btn-s').addClass('btn');
                                 }
                             }
                         }
-
                     });
 
                     microgear.on('connected', function () {
-                        microgear.subscribe("/chat");
+                        microgear.subscribe("/angun");
                         microgear.setAlias(name);
-                        microgear.publish("/chat", "I'm new#" + name);
-                        microgear.publish("/chat", "Hi#" + name);
+                        microgear.publish("/angun", "I'm new#" + name);
+                        microgear.publish("/angun", "Hi#" + name);
                     });
                     microgear.on('present', function (event) {
                         console.log(event);
@@ -135,30 +139,16 @@
                     });
                     
                     $('#onall').click(function(){
-                        microgear.publish("/chat", "msg#" + name + "#ch0=1");
-                        microgear.publish("/chat", "msg#" + name + "#ch1=1");
-                        microgear.publish("/chat", "msg#" + name + "#ch2=1");
-                        microgear.publish("/chat", "msg#" + name + "#ch3=1");
-                        microgear.publish("/chat", "msg#" + name + "#ch4=1");
-                        microgear.publish("/chat", "msg#" + name + "#ch5=1");
-                        microgear.publish("/chat", "msg#" + name + "#ch6=1");
-                        microgear.publish("/chat", "msg#" + name + "#ch7=1");
+                        microgear.publish("/angun", "msg#" + name + "#all=255");
                         setButtonState();
                     });
                     $('#offall').click(function(){
-                        microgear.publish("/chat", "msg#" + name + "#ch0=0");
-                        microgear.publish("/chat", "msg#" + name + "#ch1=0");
-                        microgear.publish("/chat", "msg#" + name + "#ch2=0");
-                        microgear.publish("/chat", "msg#" + name + "#ch3=0");
-                        microgear.publish("/chat", "msg#" + name + "#ch4=0");
-                        microgear.publish("/chat", "msg#" + name + "#ch5=0");
-                        microgear.publish("/chat", "msg#" + name + "#ch6=0");
-                        microgear.publish("/chat", "msg#" + name + "#ch7=0");
+                        microgear.publish("/angun", "msg#" + name + "#all=0");
                         setButtonState();
                     });
 
                     function setButtonState() {
-                        microgear.publish("/chat", "msg#" + name + "#chs");
+                        microgear.publish("/angun", "msg#" + name + "#all");
                     }
 
                     function setState(b) {
@@ -171,20 +161,20 @@
 
                         } else {
                             paramName = $(b).attr('id');
-                            paramVal = '1';
+                            paramVal = '255';
                             $(b).removeClass('btn').addClass('btn-s');
                         }
-                        microgear.publish("/chat", "msg#" + name + "#" + paramName + "=" + paramVal);
+                        microgear.publish("/angun", "msg#" + name + "#" + paramName + "=" + paramVal);
                     }
 
 
 
 
                     function disconnect() {
-                        microgear.publish("/chat", "bye#" + name);
+                        microgear.publish("/angun", "bye#" + name);
                     }
                     function chat(msg) {
-                        microgear.publish("/chat", "msg#" + name + "#" + msg);
+                        microgear.publish("/angun", "msg#" + name + "#" + msg);
                     }
 
                 </script>
